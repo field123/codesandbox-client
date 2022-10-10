@@ -4,9 +4,13 @@ import { useAppState } from 'app/overmind';
 import { RepoCard } from './RepoCard';
 import { RepoListItem } from './RepoListItem';
 import { useSelection } from '../Selection';
-import { DashboardRepo } from '../../types';
+import { DashboardSyncedSandbox } from '../../types';
 
-export const Repo = ({ name = '', path = null, ...props }: DashboardRepo) => {
+export const Repo = ({
+  name = '',
+  path = null,
+  ...props
+}: DashboardSyncedSandbox) => {
   const { dashboard } = useAppState();
 
   const Component = dashboard.viewMode === 'list' ? RepoListItem : RepoCard;
