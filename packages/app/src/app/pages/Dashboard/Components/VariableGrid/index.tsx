@@ -71,7 +71,7 @@ interface IComponentForTypes {
   sandbox: React.FC<DecoratedItemProps<DashboardSandbox>>;
   template: React.FC<DecoratedItemProps<DashboardTemplate>>;
   folder: React.FC<DecoratedItemProps<DashboardFolder>>;
-  repo: React.FC<DecoratedItemProps<DashboardSyncedSandbox>>;
+  'synced-sandbox': React.FC<DecoratedItemProps<DashboardSyncedSandbox>>;
   'new-folder': React.FC<DecoratedItemProps<DashboardNewFolder>>;
   'new-sandbox': React.FC<DecoratedItemProps<DashboardNewSandbox>>;
   'new-master-branch': React.FC<DecoratedItemProps<DashboardNewMasterBranch>>;
@@ -103,7 +103,9 @@ const ComponentForTypes: IComponentForTypes = {
     />
   )),
   folder: props => <Folder key={props.item.name} {...props.item} />,
-  repo: props => <Repo {...props.item} isScrolling={props.isScrolling} />,
+  'synced-sandbox': props => (
+    <Repo {...props.item} isScrolling={props.isScrolling} />
+  ),
   'new-folder': props => <CreateFolder {...props.item} />,
   'new-sandbox': () => <NewSandbox />,
   'new-master-branch': props => <NewMasterSandbox {...props.item} />,
