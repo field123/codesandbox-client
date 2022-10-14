@@ -18,6 +18,8 @@ function prefetchScript(url) {
   preloadLink.as = 'script';
   document.head.appendChild(preloadLink);
 }
+// eslint-disable-next-line no-console
+console.log('CODESANDBOX_HOST in startup: ', process.env.CODESANDBOX_HOST);
 
 prefetchScript(
   `${
@@ -34,7 +36,7 @@ for (let i = 0; i < WORKERS_TO_LOAD; i++) {
   window.babelworkers.push(worker);
 }
 
-if (!isStandalone) {
+if (!isStandalone || process.env.SANDPACK) {
   // Means we're in the editor
   setupHistoryListeners();
   hookConsole();

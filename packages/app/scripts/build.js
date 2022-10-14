@@ -115,6 +115,10 @@ function printFileSizes(stats, previousSizeMap) {
 // Create the production build and print the deployment instructions.
 function build(previousSizeMap) {
   console.log(
+    'process.env inside scripts/build.js: ',
+    process.env.CODESANDBOX_HOST
+  );
+  console.log(
     `Creating a ${
       process.env.NODE_ENV === 'production' ? 'production' : 'development'
     } build...`

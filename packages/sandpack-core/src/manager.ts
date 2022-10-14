@@ -124,6 +124,7 @@ type TManagerOptions = {
   hasFileResolver: boolean;
   versionIdentifier: string;
   reactDevTools?: 'legacy' | 'latest';
+  cacheUrl?: string;
 };
 
 function triggerFileWatch(path: string, type: 'rename' | 'change') {
@@ -164,6 +165,8 @@ export default class Manager implements IEvaluator {
       };
     };
   };
+
+  cacheUrl?: string;
 
   reactDevTools?: 'legacy' | 'latest';
 
@@ -230,6 +233,13 @@ export default class Manager implements IEvaluator {
     this.esmodules = new Map();
     this.resolverCache = new Map();
     this.reactDevTools = options.reactDevTools;
+    this.cacheUrl = options.cacheUrl;
+    // eslint-disable-next-line no-console
+    console.log(
+      'manager - cache url inside constructor: ',
+      options,
+      this.cacheUrl
+    );
 
     /**
      * Contribute the file fetcher, which needs the manager to resolve the files
@@ -1306,7 +1316,12 @@ export default class Manager implements IEvaluator {
     {
       entryPath,
       optimizeForSize,
-    }: { entryPath?: string; optimizeForSize: boolean } = {
+      alwaysIncludeTranspiledSource,
+    }: {
+      entryPath?: string;
+      optimizeForSize: boolean;
+      alwaysIncludeTranspiledSource?: boolean;
+    } = {
       optimizeForSize: true,
     }
   ): Promise<ManagerCache> {
@@ -1390,6 +1405,20 @@ export default class Manager implements IEvaluator {
           meta: { [dir: string]: string[] };
         } = data;
 
+        // eslint-disable-next-line no-console
+        console.log(
+          'manager - are cache versions equal: ',
+          cacheVersion,
+          this.version,
+          cacheVersion === this.version
+        );
+        // eslint-disable-next-line no-console
+        console.log(
+          'manager - are deps equal: ',
+          dependenciesQuery,
+          this.getDependencyQuery(),
+          dependenciesQuery === this.getDependencyQuery()
+        );
         // Only use the cache if the cached version was cached with the same
         // version of the compiler and dependencies haven't changed
         if (
@@ -1424,6 +1453,8 @@ export default class Manager implements IEvaluator {
               return tModule.load(serializedTModules[id], tModules, this);
             })
           );
+          // eslint-disable-next-line no-console
+          console.log('manager - Loaded cache.');
           debug(`Loaded cache.`);
         }
       }

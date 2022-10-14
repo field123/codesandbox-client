@@ -1,29 +1,34 @@
 // import * as debug from 'debug';
-import host from './host';
+// import host from './host';
 
 const bundlers: Map<Window, string> = new Map();
 
 function checkIsStandalone() {
-  if (typeof window === 'undefined') {
-    return true;
-  }
-
-  if (window.location && window.location.href.indexOf('?standalone') > -1) {
-    return true;
-  }
-
-  if (window.opener || window.parent !== window) {
-    if (window.location && window.location.href.indexOf(host) > -1) {
-      // If this location href is codesandbox.io or something, we're most probably in an embed
-      // iframed on another page. This means that we're actually standalone, but we're fooled
-      // by the fact that we're embedded somewhere else.
-      return true;
-    }
-
-    return false;
-  }
-
-  return true;
+  // eslint-disable-next-line no-console
+  console.log('checking is standalone and hard coded false return');
+  return false;
+  // eslint-disable-next-line no-console
+  // console.log('checking is standalone: ', process.env)
+  // if (typeof window === 'undefined') {
+  //   return true;
+  // }
+  //
+  // if (window.location && window.location.href.indexOf('?standalone') > -1) {
+  //   return true;
+  // }
+  //
+  // if (window.opener || window.parent !== window) {
+  //   if (window.location && window.location.href.indexOf(host) > -1) {
+  //     // If this location href is codesandbox.io or something, we're most probably in an embed
+  //     // iframed on another page. This means that we're actually standalone, but we're fooled
+  //     // by the fact that we're embedded somewhere else.
+  //     return true;
+  //   }
+  //
+  //   return false;
+  // }
+  //
+  // return true;
 }
 
 // Whether the tab has a connection with the editor
@@ -115,7 +120,7 @@ export function listen(callback: Callback): () => void {
 }
 
 export function notifyListeners(data: object, source?: MessageEvent['source']) {
-  // eslint-disable-next-line no-shadow
+  // eslint-disable-next-line no-shadow,@typescript-eslint/no-shadow
   Object.keys(listeners).forEach(listenerId => {
     if (listeners[listenerId]) {
       try {

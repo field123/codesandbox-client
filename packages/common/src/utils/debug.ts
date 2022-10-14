@@ -4,22 +4,24 @@ import { getGlobal } from './global';
 declare var __DEV__: boolean | undefined;
 
 const shouldShowDebugger = () => {
-  if (typeof __DEV__ !== 'undefined' && __DEV__) {
-    return true;
-  }
-
-  if (process.env.NODE_ENV === 'development') {
-    return true;
-  }
-
-  if (
-    typeof document !== 'undefined' &&
-    document.location.search.includes('debug')
-  ) {
-    return true;
-  }
-
-  return false;
+  // Temp force debug
+  return true;
+  // if (typeof __DEV__ !== 'undefined' && __DEV__) {
+  //   return true;
+  // }
+  //
+  // if (process.env.NODE_ENV === 'development') {
+  //   return true;
+  // }
+  //
+  // if (
+  //   typeof document !== 'undefined' &&
+  //   document.location.search.includes('debug')
+  // ) {
+  //   return true;
+  // }
+  //
+  // return false;
 };
 
 const getDebugger: () => (key: string) => (...message: any[]) => void = () => {

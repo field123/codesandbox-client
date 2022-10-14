@@ -148,6 +148,15 @@ export function persistMeasurements(data: {
       },
     },
   ];
+  // eslint-disable-next-line no-console
+  console.log('Measurement: ', {
+    ...body[0],
+    fields: {
+      ...body[0].fields,
+      verifyTreeTranspiled: measurements.verifyTreeTranspiled,
+      transpileModules: measurements.transpileModules,
+    },
+  });
 
   if (process.env.NODE_ENV === 'development' || process.env.STAGING) {
     // eslint-disable-next-line

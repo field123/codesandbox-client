@@ -44,6 +44,8 @@ let manager: Manager | null = null;
 let actionsEnabled = false;
 
 const debug = _debug('cs:compiler');
+// eslint-disable-next-line no-console
+console.log('process.env: ', JSON.stringify(process.env, null, 2));
 
 export function areActionsEnabled() {
   return actionsEnabled;
@@ -318,10 +320,12 @@ async function initializeManager(
     hasFileResolver = false,
     customNpmRegistries = [],
     reactDevTools,
+    cacheUrl,
   }: {
     hasFileResolver?: boolean;
     customNpmRegistries?: NpmRegistry[];
     reactDevTools?: 'legacy' | 'latest';
+    cacheUrl?: string;
   } = {}
 ) {
   const newManager = new Manager(
@@ -332,6 +336,7 @@ async function initializeManager(
       hasFileResolver,
       versionIdentifier: SCRIPT_VERSION,
       reactDevTools,
+      cacheUrl,
     }
   );
 
@@ -473,6 +478,7 @@ interface CompileOptions {
   disableDependencyPreprocessing?: boolean;
   clearConsoleDisabled?: boolean;
   reactDevTools?: 'legacy' | 'latest';
+  cacheUrl?: string;
 }
 
 async function compile(opts: CompileOptions) {
@@ -493,6 +499,7 @@ async function compile(opts: CompileOptions) {
     disableDependencyPreprocessing = false,
     clearConsoleDisabled = false,
     reactDevTools,
+    cacheUrl,
   } = opts;
 
   if (firstLoad) {
@@ -561,6 +568,7 @@ async function compile(opts: CompileOptions) {
         hasFileResolver,
         customNpmRegistries,
         reactDevTools,
+        cacheUrl,
       }));
 
     let dependencies: NPMDependencies = getDependencies(
@@ -628,7 +636,7 @@ async function compile(opts: CompileOptions) {
         template,
         modules,
         configurations,
-        { hasFileResolver, reactDevTools }
+        { hasFileResolver, reactDevTools, cacheUrl }
       );
     }
 
@@ -671,8 +679,16 @@ async function compile(opts: CompileOptions) {
     dispatch({ type: 'status', status: 'transpiling' });
     manager.setStage('transpilation');
 
+    metrics.measure('verifyTreeTranspiled');
     await manager.verifyTreeTranspiled();
+    metrics.endMeasure('verifyTreeTranspiled', {
+      displayName: 'Verify Tree Transpiled',
+    });
+    metrics.measure('transpileModules');
     await manager.transpileModules(managerModuleToTranspile);
+    metrics.endMeasure('transpileModules', {
+      displayName: 'Transpile Modules',
+    });
 
     metrics.endMeasure('transpilation', { displayName: 'Transpilation' });
 
@@ -817,9 +833,11 @@ async function compile(opts: CompileOptions) {
     dispatch({
       type: 'success',
     });
-
+    // eslint-disable-next-line no-console
+    console.log('about to save cache. not awaited.');
     saveCache(managerModuleToTranspile, manager, changedModuleCount, firstLoad);
-
+    // eslint-disable-next-line no-console
+    console.log('after save cache. not awaited');
     setTimeout(async () => {
       try {
         testRunner =
@@ -844,7 +862,7 @@ async function compile(opts: CompileOptions) {
       manager.clearCache();
 
       if (firstLoad && changedModuleCount === 0) {
-        await deleteAPICache(manager.id, SCRIPT_VERSION);
+        await deleteAPICache(manager.id, SCRIPT_VERSION, manager);
       }
     }
 

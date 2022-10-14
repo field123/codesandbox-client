@@ -257,12 +257,21 @@ export function getSandboxId() {
     const re = RegExp(`${first}-(.*)\\.${segments.join('\\.')}`);
     return document.location.host.match(re)[1];
   }
-
+  // eslint-disable-next-line no-console
+  console.log('csbHost: ', csbHost);
   let result: string;
   [csbHost, sandboxHost[csbHost]].filter(Boolean).forEach(tryHost => {
+    // eslint-disable-next-line no-console
+    console.log('inside for each tryHost: ', tryHost);
     const hostRegex = tryHost.replace(/https?:\/\//, '').replace(/\./g, '\\.');
+    // eslint-disable-next-line no-console
+    console.log('hostRegex: ', hostRegex);
     const sandboxRegex = new RegExp(`(.*)\\.${hostRegex}`);
+    // eslint-disable-next-line no-console
+    console.log('sandboxRegex: ', sandboxRegex);
     const matches = document.location.host.match(sandboxRegex);
+    // eslint-disable-next-line no-console
+    console.log('matches: ', matches);
     if (matches) {
       result = matches[1];
     }

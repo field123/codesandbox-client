@@ -14,6 +14,7 @@ import { show404 } from 'sandbox-hooks/not-found-screen';
 import compile, { getCurrentManager } from './compile';
 
 const host = process.env.CODESANDBOX_HOST;
+// const sandpack = process.env.SANDPACK;
 const withServiceWorker = !process.env.SANDPACK;
 const debug = _debug('cs:sandbox');
 
@@ -31,13 +32,19 @@ requirePolyfills().then(() => {
   }
 
   function sendReady() {
+    // eslint-disable-next-line no-console
+    console.log('sending ready message.');
     dispatch({ type: 'initialized', url: document.location.href });
   }
 
   let isInitializationCompile = true;
   async function handleMessage(data, source) {
+    // eslint-disable-next-line no-console
+    console.log('sandbox client - handleMessage called: ', data, source);
     if (source) {
       if (data.type === 'compile') {
+        // eslint-disable-next-line no-console
+        console.log(`index - compile ${data}`, data);
         // In sandpack we always broadcast a compile message from every manager whenever 1 frame reconnects.
         // We do this because the initialized message does comes before the handshake is done, so there's no channel id.
         // To prevent every mounted frame from recompiling, we explicitly flag that this compilation is meant to be the
@@ -71,13 +78,18 @@ requirePolyfills().then(() => {
       }
     }
   }
-
+  // eslint-disable-next-line no-console
+  console.log('value of isStandalone: ', isStandalone);
   if (!isStandalone) {
+    // eslint-disable-next-line no-console
+    console.log('is not isStandalone: ', isStandalone);
     listen(handleMessage);
 
     sendReady();
   }
 
+  // eslint-disable-next-line no-console
+  console.log('value of isStandalone is true: ', isStandalone);
   if (process.env.NODE_ENV === 'test' || isStandalone) {
     // We need to fetch the sandbox ourselves...
     const id = getSandboxId();

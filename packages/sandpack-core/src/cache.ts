@@ -9,6 +9,8 @@ import { SerializedTranspiledModule } from './transpiled-module';
 const debug = _debug('cs:compiler:cache');
 
 const host = process.env.CODESANDBOX_HOST;
+// eslint-disable-next-line no-console
+console.log('cache - CODESANDBOX_HOST: ', host);
 localforage.defineDriver(memoryDriver);
 localforage.setDriver([
   localforage.INDEXEDDB,
@@ -35,6 +37,13 @@ try {
 }
 
 function shouldSaveOnlineCache(firstRun: boolean, changes: number) {
+  // eslint-disable-next-line no-console
+  console.log('cache - inside shouldSaveOnlineCache: ', firstRun, changes);
+  // eslint-disable-next-line no-console
+  console.log(
+    'cache - (window as any).__SANDBOX_DATA__: ',
+    (window as any).__SANDBOX_DATA__
+  );
   if (!firstRun || changes > 0) {
     return false;
   }
@@ -56,7 +65,13 @@ export async function saveCache(
   changes: number,
   firstRun: boolean
 ) {
+  // eslint-disable-next-line no-console
+  console.log('cache - inside saveCache, manager: ', manager);
   if (!manager.id) {
+    // eslint-disable-next-line no-console
+    console.log(
+      `cache - about to return false because manager.id is defined: ${manager.id}`
+    );
     return Promise.resolve(false);
   }
 
@@ -68,6 +83,8 @@ export async function saveCache(
       optimizeForSize: true,
     })),
   };
+  // eslint-disable-next-line no-console
+  console.log('cache - managerState: ', managerState);
 
   try {
     if (process.env.NODE_ENV === 'development') {
@@ -89,7 +106,19 @@ export async function saveCache(
   if (shouldSaveOnlineCache(firstRun, changes)) {
     const stringifiedManagerState = JSON.stringify(managerState);
 
+    // eslint-disable-next-line no-console
+    console.log(
+      'cache - inside if result of shouldSaveOnlineCache, stringifiedManagerState: ',
+      stringifiedManagerState
+    );
+
     if (stringifiedManagerState.length > MAX_CACHE_SIZE) {
+      // eslint-disable-next-line no-console
+      console.log(
+        'cache - stringifiedManagerState.length > MAX_CACHE_SIZE: ',
+        MAX_CACHE_SIZE,
+        stringifiedManagerState.length
+      );
       return Promise.resolve(false);
     }
 
@@ -98,18 +127,30 @@ export async function saveCache(
         (stringifiedManagerState.length / 1024).toFixed(2) +
         'kb to CodeSandbox API'
     );
-
+    // eslint-disable-next-line no-console
+    console.log(
+      'Saving cache of ' +
+        (stringifiedManagerState.length / 1024).toFixed(2) +
+        'kb to CodeSandbox API'
+    );
+    // eslint-disable-next-line no-console
+    console.log(`cache - value used in fetch ${manager.cacheUrl ?? host}`);
+    // eslint-disable-next-line no-console
+    console.log(`cache - manager value before fetch: ${manager}`);
     return window
-      .fetch(`${host}/api/v1/sandboxes/${manager.id}/cache`, {
-        method: 'POST',
-        body: JSON.stringify({
-          version: manager.version,
-          data: stringifiedManagerState,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      .fetch(
+        `${manager.cacheUrl ?? host}/api/v1/sandboxes/${manager.id}/cache`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            version: manager.version,
+            data: stringifiedManagerState,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
       .then(x => x.json())
       .catch(e => {
         if (process.env.NODE_ENV === 'development') {
@@ -124,20 +165,30 @@ export async function saveCache(
 
 export function deleteAPICache(
   sandboxId: string,
-  version: string
+  version: string,
+  manager?: Manager // TODO can't really be optional
 ): Promise<any> {
   if (APICacheUsed && !process.env.SANDPACK) {
     debug('Deleting cache of API');
+    // eslint-disable-next-line no-console
+    console.log(
+      `cache - deleting cache of api value used in fetch ${
+        manager?.cacheUrl ?? host
+      }`
+    );
     return window
-      .fetch(`${host}/api/v1/sandboxes/${sandboxId}/cache`, {
-        method: 'DELETE',
-        body: JSON.stringify({
-          version,
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      })
+      .fetch(
+        `${manager?.cacheUrl ?? host}/api/v1/sandboxes/${sandboxId}/cache`,
+        {
+          method: 'DELETE',
+          body: JSON.stringify({
+            version,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
       .then(x => x.json())
       .catch(e => {
         console.error('Something went wrong while deleting cache.');
@@ -187,6 +238,8 @@ export function ignoreNextCache() {
 }
 
 export async function consumeCache(manager: Manager) {
+  // eslint-disable-next-line no-console
+  console.log('cache - inside consumeCache, manager: ', manager);
   if (!manager.id) {
     return false;
   }
@@ -195,26 +248,47 @@ export async function consumeCache(manager: Manager) {
     const shouldIgnoreCache =
       localStorage.getItem('ignoreCache') ||
       localStorage.getItem('ignoreCacheDev');
+    // eslint-disable-next-line no-console
+    console.log('cache - should ignore cache: ', shouldIgnoreCache);
     if (shouldIgnoreCache) {
       localStorage.removeItem('ignoreCache');
-
+      // eslint-disable-next-line no-console
+      console.log('cache - ignoring cache: ', shouldIgnoreCache);
       return false;
     }
-
+    // eslint-disable-next-line no-console
+    console.log(
+      'cache - value of (window as any).__SANDBOX_DATA__ inside consumeCache: ',
+      (window as any).__SANDBOX_DATA__
+    );
     const cacheData = (window as any).__SANDBOX_DATA__;
     const localData: ManagerCache | undefined = await localforage.getItem(
       manager.id
     );
 
     const cache = findCacheToUse(cacheData && cacheData.data, localData);
+    // eslint-disable-next-line no-console
+    console.log('cache - result of findCacheToUse: ', cache);
     if (cache) {
+      // eslint-disable-next-line no-console
+      console.log(
+        'cache - cache present checking version: ',
+        cache.version,
+        manager.version,
+        cache.version === manager.version
+      );
       if (cache.version === manager.version) {
         if (cache === localData) {
           APICacheUsed = false;
         } else {
           APICacheUsed = true;
         }
-
+        // eslint-disable-next-line no-console
+        console.log(
+          `cache - Loading cache from ${
+            cache === localData ? 'IndexedDB' : 'API'
+          }`
+        );
         debug(
           `Loading cache from ${cache === localData ? 'IndexedDB' : 'API'}`,
           cache

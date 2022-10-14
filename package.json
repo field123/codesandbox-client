@@ -130,5 +130,8 @@
     "type": "opencollective",
     "url": "https://opencollective.com/codesandbox",
     "logo": "https://opencollective.com/codesandbox/logo.txt"
+  },
+  "volta": {
+    "node": "10.22.1"
   }
 }
